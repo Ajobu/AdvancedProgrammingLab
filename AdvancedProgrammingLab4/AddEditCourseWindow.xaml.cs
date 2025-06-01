@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Collections.ObjectModel;
 
 namespace WpfApp1
 {
     public partial class AddEditCourseWindow : Window
     {
         public Course Course { get; private set; }
-        public List<Student> AvailableStudents { get; private set; }
+        public ObservableCollection<Student> AvailableStudents { get; private set; }
         public string ButtonText { get; private set; } = "Add";
 
         public AddEditCourseWindow(List<Student> allStudents, List<Teacher> teachers, Course existingCourse = null)
@@ -18,10 +19,10 @@ namespace WpfApp1
             DataContext = this;
 
             Course = existingCourse ?? new Course();
-            AvailableStudents = new List<Student>(allStudents);
-
+            AvailableStudents = new ObservableCollection<Student>();
             TeacherComboBox.ItemsSource = teachers;
 
+            var availableStudents = allStudents.ToList();
             if (existingCourse != null)
             {
                 ButtonText = "Save";
@@ -29,8 +30,15 @@ namespace WpfApp1
 
                 foreach (var student in existingCourse.Students)
                 {
-                    AvailableStudents.RemoveAll(s => s.FirstName == student.FirstName && s.LastName == student.LastName);
+                    availableStudents.RemoveAll(s =>
+                        s.FirstName == student.FirstName &&
+                        s.LastName == student.LastName);
                 }
+            }
+
+            foreach (var student in availableStudents)
+            {
+                AvailableStudents.Add(student);
             }
         }
 
@@ -38,8 +46,12 @@ namespace WpfApp1
         {
             if (AvailableStudentsList.SelectedItem is Student selectedStudent)
             {
-                Course.Students.Add(selectedStudent);
-                AvailableStudents.Remove(selectedStudent);
+                if (!Course.Students.Any(s => s.FirstName == selectedStudent.FirstName &&
+                                             s.LastName == selectedStudent.LastName))
+                {
+                    Course.Students.Add(selectedStudent);
+                    AvailableStudents.Remove(selectedStudent);
+                }
             }
         }
 
@@ -48,7 +60,11 @@ namespace WpfApp1
             if (SelectedStudentsList.SelectedItem is Student selectedStudent)
             {
                 Course.Students.Remove(selectedStudent);
-                AvailableStudents.Add(selectedStudent);
+                if (!AvailableStudents.Any(s => s.FirstName == selectedStudent.FirstName &&
+                                              s.LastName == selectedStudent.LastName))
+                {
+                    AvailableStudents.Add(selectedStudent);
+                }
             }
         }
 
@@ -78,6 +94,31 @@ namespace WpfApp1
 
             DialogResult = true;
             Close();
+        }
+
+        private void PasteStudentCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = Clipboard.ContainsData("Student");
+        }
+
+        private void PasteStudentCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (Clipboard.ContainsData("Student") &&
+                Clipboard.GetData("Student") is Student student)
+            {
+                if (!Course.Students.Any(s => s.FirstName == student.FirstName &&
+                                            s.LastName == student.LastName))
+                {
+                    Course.Students.Add(student);
+                    var studentToRemove = AvailableStudents.FirstOrDefault(s =>
+                        s.FirstName == student.FirstName &&
+                        s.LastName == student.LastName);
+                    if (studentToRemove != null)
+                    {
+                        AvailableStudents.Remove(studentToRemove);
+                    }
+                }
+            }
         }
     }
 }
