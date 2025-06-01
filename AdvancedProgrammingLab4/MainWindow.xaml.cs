@@ -1,7 +1,8 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace WpfApp1
 {
@@ -14,20 +15,23 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
-          
+
             StudentsList.ItemsSource = Students;
             TeachersList.ItemsSource = Teachers;
             CoursesList.ItemsSource = Courses;
+
+            StudentsList.Focusable = true;
+            Loaded += (s, e) => StudentsList.Focus();
         }
 
         private void AddStudent_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(FirstNameInput.Text) && !string.IsNullOrWhiteSpace(LastNameInput.Text))
             {
-                Students.Add(new Student 
-                { 
-                    FirstName = FirstNameInput.Text, 
-                    LastName = LastNameInput.Text 
+                Students.Add(new Student
+                {
+                    FirstName = FirstNameInput.Text,
+                    LastName = LastNameInput.Text
                 });
                 FirstNameInput.Clear();
                 LastNameInput.Clear();
@@ -44,13 +48,13 @@ namespace WpfApp1
 
         private void AddTeacher_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(TeacherFirstNameInput.Text) && 
+            if (!string.IsNullOrWhiteSpace(TeacherFirstNameInput.Text) &&
                 !string.IsNullOrWhiteSpace(TeacherLastNameInput.Text))
             {
-                Teachers.Add(new Teacher 
-                { 
-                    FirstName = TeacherFirstNameInput.Text, 
-                    LastName = TeacherLastNameInput.Text 
+                Teachers.Add(new Teacher
+                {
+                    FirstName = TeacherFirstNameInput.Text,
+                    LastName = TeacherLastNameInput.Text
                 });
                 TeacherFirstNameInput.Clear();
                 TeacherLastNameInput.Clear();
@@ -92,5 +96,29 @@ namespace WpfApp1
                 }
             }
         }
+
+        private void CopyStudentCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = StudentsList.SelectedItem != null;
+        }
+
+       private void CopyStudentCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+{
+    try
+    {
+        if (StudentsList.SelectedItem is Student student)
+        {
+            Clipboard.Clear(); 
+            Clipboard.SetData("Student", student);
+            MessageBox.Show($"Student {student} copied to clipboard", "Information", 
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show($"Failed to copy student: {ex.Message}", "Error", 
+            MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+}
     }
 }
