@@ -1,11 +1,17 @@
-﻿<Window x:Class="WpfApp1.AddEditCourseWindow"
+<Window x:Class="WpfApp1.AddEditCourseWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfApp1"
-        mc:Ignorable="d"
-        Title="Add/Edit Course" Height="450" Width="600">
+        Title="Add/Edit Course" Height="500" Width="800"
+        Style="{StaticResource {x:Type Window}}">
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Paste" 
+                      CanExecute="PasteStudentCommand_CanExecute" 
+                      Executed="PasteStudentCommand_Executed"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="V" Modifiers="Control" Command="ApplicationCommands.Paste"/>
+    </Window.InputBindings>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -14,59 +20,65 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-            <TextBlock Text="Course Name:" Width="100" VerticalAlignment="Center"/>
-            <TextBox x:Name="CourseNameTextBox" Width="200" Text="{Binding Course.Name}"/>
-        </StackPanel>
+        
+        <GroupBox Header="Course Information" Grid.Row="0" Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-            <TextBlock Text="Teacher:" Width="100" VerticalAlignment="Center"/>
-            <ComboBox x:Name="TeacherComboBox" Width="200" 
-                      DisplayMemberPath="."
-                      SelectedItem="{Binding Course.Teacher}"/>
-        </StackPanel>
+                <TextBlock Text="Course Name:" Grid.Row="0" Grid.Column="0" Margin="5"/>
+                <TextBox Text="{Binding Course.Name}" Grid.Row="0" Grid.Column="1" Margin="5" Padding="5"/>
 
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+                <TextBlock Text="Teacher:" Grid.Row="1" Grid.Column="0" Margin="5"/>
+                <ComboBox x:Name="TeacherComboBox" Grid.Row="1" Grid.Column="1" Margin="5" Padding="5"
+                        DisplayMemberPath="."
+                        SelectedItem="{Binding Course.Teacher}"/>
+            </Grid>
+        </GroupBox>
 
-            <!-- Available Students -->
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Available Students" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                <ListView x:Name="AvailableStudentsList" ItemsSource="{Binding AvailableStudents}" 
-                          MouseDoubleClick="AvailableStudentsList_MouseDoubleClick">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}"/>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </StackPanel>
+        
+        <GroupBox Header="Students Management" Grid.Row="2" Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Buttons -->
-            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
-                <Button Content="&gt;" Margin="0,5" Padding="10,2" Click="AddStudent_Click"/>
-                <Button Content="&lt;" Margin="0,5" Padding="10,2" Click="RemoveStudent_Click"/>
-            </StackPanel>
+                
+                <GroupBox Header="Available Students" Grid.Column="0">
+                    <ListView x:Name="AvailableStudentsList" ItemsSource="{Binding AvailableStudents}" 
+                            MouseDoubleClick="AvailableStudentsList_MouseDoubleClick">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Padding="5"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </GroupBox>
+                
+                <GroupBox Header="Selected Students" Grid.Column="2">
+                    <ListView x:Name="SelectedStudentsList" ItemsSource="{Binding Course.Students}" 
+                            MouseDoubleClick="SelectedStudentsList_MouseDoubleClick">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Padding="5"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </GroupBox>
+            </Grid>
+        </GroupBox>
 
-            <!-- Selected Students -->
-            <StackPanel Grid.Column="2">
-                <TextBlock Text="Selected Students" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                <ListView x:Name="SelectedStudentsList" ItemsSource="{Binding Course.Students}" 
-                          MouseDoubleClick="SelectedStudentsList_MouseDoubleClick">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}"/>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </StackPanel>
-        </Grid>
-
+      
         <Button Grid.Row="3" Content="{Binding ButtonText}" HorizontalAlignment="Right" 
-                Width="100" Margin="0,10,0,0" Click="SaveButton_Click"/>
+              Margin="0,10,0,0" Padding="15,5" MinWidth="100" FontWeight="Bold"
+              Click="SaveButton_Click"/>
     </Grid>
 </Window>
